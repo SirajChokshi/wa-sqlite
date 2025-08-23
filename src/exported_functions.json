@@ -253,11 +253,5 @@
   "_sqlite3_wal_autocheckpoint",
   "_sqlite3_wal_checkpoint",
   "_sqlite3_wal_checkpoint_v2",
-  "_sqlite3_wal_hook",
-  "_sqlite3mc_vfs_create",
-  "_sqlite3mc_config",
-  "_sqlite3mc_cipher_index",
-  "_sqlite3mc_config_cipher",
-  "_sqlite3mc_cipher_count",
-  "_sqlite3mc_cipher_name"
+  "_sqlite3_wal_hook"
 ]
