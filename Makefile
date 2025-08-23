@@ -1,10 +1,30 @@
 # dependencies
-SQLITE_VERSION = version-3.50.1
-SQLITE_TARBALL_URL = https://www.sqlite.org/src/tarball/$(SQLITE_VERSION)/sqlite.tar.gz
+# SQLITE_VERSION = version-3.50.4
+# SQLITE_TARBALL_URL = https://www.sqlite.org/src/tarball/$(SQLITE_VERSION)/sqlite.tar.gz
+
+SQLITE_VERSION = 3.50.4
+
+# Ensure the multiple ciphers release was built with the same version of SQLite
+# https://github.com/utelle/SQLite3MultipleCiphers/releases
+MC_SQLITE_VERSION = 2.2.4
+
+SQLITE_TARBALL_URL = https://www.sqlite.org/src/tarball/version-${SQLITE_VERSION}/sqlite.tar.gz
+MC_SQLITE_URL = https://github.com/utelle/SQLite3MultipleCiphers/releases/download/v${MC_SQLITE_VERSION}/sqlite3mc-${MC_SQLITE_VERSION}-sqlite-${SQLITE_VERSION}-amalgamation.zip
 
 EXTENSION_FUNCTIONS = extension-functions.c
 EXTENSION_FUNCTIONS_URL = https://www.sqlite.org/contrib/download/extension-functions.c?get=25
 EXTENSION_FUNCTIONS_SHA3 = ee39ddf5eaa21e1d0ebcbceeab42822dd0c4f82d8039ce173fd4814807faabfa
+
+MC_CFILES = \
+	sqlite3mc_amalgamation.c \
+	extension-functions.c \
+	main.c \
+	libauthorizer.c \
+	libfunction.c \
+	libhook.c \
+	libprogress.c \
+	libvfs.c \
+	$(CFILES_EXTRA)
 
 # source files
 CFILES = \
