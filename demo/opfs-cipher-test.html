@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OPFS + Cipher End-to-End Test</title>
+  <style>
+    body { 
+      font-family: 'SF Mono', Monaco, monospace; 
+      padding: 20px; 
+      background: #0d1117; 
+      color: #c9d1d9; 
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { color: #58a6ff; margin-bottom: 5px; }
+    .subtitle { color: #8b949e; margin-bottom: 20px; }
+    .phase { 
+      background: #161b22; 
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 15px; 
+      margin: 15px 0;
+    }
+    .phase-title { 
+      color: #f0883e; 
+      font-weight: bold; 
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .log-line { 
+      padding: 4px 0; 
+      font-size: 13px;
+      border-bottom: 1px solid #21262d;
+    }
+    .log-line:last-child { border-bottom: none; }
+    .success { color: #3fb950; }
+    .error { color: #f85149; }
+    .info { color: #58a6ff; }
+    .checkmark { color: #3fb950; margin-right: 8px; }
+    .crossmark { color: #f85149; margin-right: 8px; }
+    #status {
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+    .status-running { background: #1f2937; border: 1px solid #58a6ff; color: #58a6ff; }
+    .status-success { background: #1c3d2e; border: 1px solid #3fb950; color: #3fb950; }
+    .status-error { background: #3d1c1c; border: 1px solid #f85149; color: #f85149; }
+    .note {
+      background: #1c2128;
+      border-left: 3px solid #58a6ff;
+      padding: 10px 15px;
+      margin: 15px 0;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 OPFS + Cipher End-to-End Test</h1>
+  <p class="subtitle">Testing OPFSCoopSyncVFS with SQLite Multiple Ciphers encryption</p>
+  
+  <div class="note">
+    <strong>Note:</strong> This test runs in a Web Worker because OPFS synchronous access 
+    (<code>createSyncAccessHandle</code>) is only available in workers.
+  </div>
+  
+  <div id="status" class="status-running">⏳ Running tests in worker...</div>
+  
+  <div id="output"></div>
+  
+  <script type="module">
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+    
+    let currentPhase = null;
+    let phaseDiv = null;
+    
+    function createPhase(title) {
+      phaseDiv = document.createElement('div');
+      phaseDiv.className = 'phase';
+      phaseDiv.innerHTML = `<div class="phase-title">${title}</div>`;
+      output.appendChild(phaseDiv);
+    }
+    
+    function addLog(msg, success) {
+      // Check for phase markers
+      if (msg.startsWith('---') && msg.endsWith('---')) {
+        createPhase(msg.replace(/---/g, '').trim());
+        return;
+      }
+      
+      if (!phaseDiv) {
+        createPhase('Initialization');
+      }
+      
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      
+      const icon = success ? 
+        '<span class="checkmark">✓</span>' : 
+        '<span class="crossmark">✗</span>';
+      
+      const colorClass = success ? 'success' : 'error';
+      line.innerHTML = `${icon}<span class="${colorClass}">${msg}</span>`;
+      phaseDiv.appendChild(line);
+    }
+    
+    // Start the worker
+    const worker = new Worker('./opfs-cipher-worker.js', { type: 'module' });
+    
+    worker.onmessage = (event) => {
+      const { success, results, error } = event.data;
+      
+      // Render all results
+      for (const { msg, success: s } of results) {
+        addLog(msg, s);
+      }
+      
+      // Update status
+      if (success) {
+        status.className = 'status-success';
+        status.innerHTML = '✅ All tests passed! OPFS encryption is working correctly.';
+      } else {
+        status.className = 'status-error';
+        status.innerHTML = `❌ Test failed: ${error}`;
+      }
+    };
+    
+    worker.onerror = (error) => {
+      status.className = 'status-error';
+      status.innerHTML = `❌ Worker error: ${error.message}`;
+      console.error('Worker error:', error);
+    };
+  </script>
+</body>
+</html>
