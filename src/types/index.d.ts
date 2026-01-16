@@ -15,7 +15,7 @@
  * each element converted to a byte); SQLite always returns blob data as
  * `Uint8Array`
  */
-type SQLiteCompatibleType = number|string|Uint8Array|Array<number>|bigint|null;
+export type SQLiteCompatibleType = number|string|Uint8Array|Array<number>|bigint|null;
 
 /**
  * SQLite Virtual File System object
@@ -852,7 +852,7 @@ declare interface SQLiteAPI {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/sqlite-constants.js' {
+declare module '@sirajchokshi/wa-sqlite/src/sqlite-constants.js' {
   export const SQLITE_OK: 0;
   export const SQLITE_ERROR: 1;
   export const SQLITE_INTERNAL: 2;
@@ -1087,8 +1087,128 @@ declare module 'wa-sqlite/src/sqlite-constants.js' {
   export const SQLITE_PREPARE_NO_VTAB: 0x04;
 }
 
-declare module 'wa-sqlite' {
-  export * from 'wa-sqlite/src/sqlite-constants.js';
+declare module '@sirajchokshi/wa-sqlite' {
+  // Types
+  export type SQLiteCompatibleType = number|string|Uint8Array|Array<number>|bigint|null;
+  export interface SQLiteVFS {
+    mxPathName?: number;
+    close(): void|Promise<void>;
+    isReady(): boolean|Promise<boolean>;
+    xClose(fileId: number): number|Promise<number>;
+    xRead(fileId: number, pData: number, iAmt: number, iOffsetLo: number, iOffsetHi: number): number|Promise<number>;
+    xWrite(fileId: number, pData: number, iAmt: number, iOffsetLo: number, iOffsetHi: number): number|Promise<number>;
+    xTruncate(fileId: number, iSizeLo: number, iSizeHi: number): number|Promise<number>;
+    xSync(fileId: number, flags: number): number|Promise<number>;
+    xFileSize(fileId: number, pSize64: number): number|Promise<number>;
+    xLock(fileId: number, flags: number): number|Promise<number>;
+    xUnlock(fileId: number, flags: number): number|Promise<number>;
+    xCheckReservedLock(fileId: number, pResOut: number): number|Promise<number>;
+    xFileControl(fileId: number, flags: number, pOut: number): number|Promise<number>;
+    xDeviceCharacteristics(fileId: number): number|Promise<number>;
+    xOpen(pVfs: number, zName: number, pFile: number, flags: number, pOutFlags: number): number|Promise<number>;
+    xDelete(pVfs: number, zName: number, syncDir: number): number|Promise<number>;
+    xAccess(pVfs: number, zName: number, flags: number, pResOut: number): number|Promise<number>;
+  }
+  export interface SQLitePrepareOptions {
+    unscoped?: boolean;
+    flags?: number;
+  }
+  export interface SQLiteAPI {
+    bind_collection(stmt: number, bindings: {[index: string]: SQLiteCompatibleType|null}|Array<SQLiteCompatibleType|null>): number;
+    bind(stmt: number, i: number, value: SQLiteCompatibleType|null): number;
+    bind_blob(stmt: number, i: number, value: Uint8Array|Array<number>): number;
+    bind_double(stmt: number, i: number, value: number): number;
+    bind_int(stmt: number, i: number, value: number): number;
+    bind_int64(stmt: number, i: number, value: bigint): number;
+    bind_null(stmt: number, i: number): number;
+    bind_parameter_count(stmt: number): number;
+    bind_parameter_name(stmt: number, i: number): string;
+    bind_text(stmt: number, i: number, value: string): number;
+    changes(db: number): number;
+    clear_bindings(stmt: number): number;
+    close(db: number): Promise<number>;
+    column(stmt: number, i: number): SQLiteCompatibleType;
+    column_blob(stmt: number, i: number): Uint8Array;
+    column_bytes(stmt: number, i: number): number;
+    column_count(stmt: number): number;
+    column_double(stmt: number, i: number): number;
+    column_int(stmt: number, i: number): number;
+    column_int64(stmt: number, i: number): bigint;
+    column_name(stmt: number, i: number): string;
+    column_names(stmt: number): Array<string>;
+    column_text(stmt: number, i: number): string;
+    column_type(stmt: number, i: number): number;
+    commit_hook(db: number, callback: (() => number) | null): void;
+    create_function(db: number, zFunctionName: string, nArg: number, eTextRep: number, pApp: number, xFunc?: (context: number, values: Uint32Array) => void|Promise<void>, xStep?: (context: number, values: Uint32Array) => void|Promise<void>, xFinal?: (context: number) => void|Promise<void>): number;
+    data_count(stmt: number): number;
+    exec(db: number, zSQL: string, callback?: (row: Array<SQLiteCompatibleType|null>, columns: string[]) => void): Promise<number>;
+    finalize(stmt: number): Promise<number>;
+    get_autocommit(db: number): number;
+    libversion(): string;
+    libversion_number(): number;
+    limit(db: number, id: number, newVal: number): number;
+    open_v2(zFilename: string, iFlags?: number, zVfs?: string): Promise<number>;
+    progress_handler(db: number, nProgressOps: number, handler: (userData: any) => number|Promise<number>, userData: any): void;
+    reset(stmt: number): Promise<number>;
+    result(context: number, value: (SQLiteCompatibleType|number[])|null): void;
+    result_blob(context: number, value: Uint8Array|number[]): void;
+    result_double(context: number, value: number): void;
+    result_int(context: number, value: number): void;
+    result_int64(context: number, value: bigint): void;
+    result_null(context: number): void;
+    result_text(context: number, value: string): void;
+    row(stmt: number): Array<SQLiteCompatibleType|null>;
+    set_authorizer(db: number, authFunction: (userData: any, iActionCode: number, param3: string|null, param4: string|null, param5: string|null, param6: string|null) => number|Promise<number>, userData: any): number;
+    sql(stmt: number): string;
+    statements(db: number, sql: string, options?: SQLitePrepareOptions): AsyncIterable<number>;
+    step(stmt: number): Promise<number>;
+    update_hook(db: number, callback: (updateType: number, dbName: string|null, tblName: string|null, rowid: bigint) => void): void;
+    value(pValue: number): SQLiteCompatibleType;
+    value_blob(pValue: number): Uint8Array;
+    value_bytes(pValue: number): number;
+    value_double(pValue: number): number;
+    value_int(pValue: number): number;
+    value_int64(pValue: number): bigint;
+    value_text(pValue: number): string;
+    value_type(pValue: number): number;
+    vfs_register(vfs: SQLiteVFS, makeDefault?: boolean): number;
+  }
+
+  // Constants
+  export const SQLITE_OK: 0;
+  export const SQLITE_ERROR: 1;
+  export const SQLITE_INTERNAL: 2;
+  export const SQLITE_PERM: 3;
+  export const SQLITE_ABORT: 4;
+  export const SQLITE_BUSY: 5;
+  export const SQLITE_LOCKED: 6;
+  export const SQLITE_NOMEM: 7;
+  export const SQLITE_READONLY: 8;
+  export const SQLITE_INTERRUPT: 9;
+  export const SQLITE_IOERR: 10;
+  export const SQLITE_CORRUPT: 11;
+  export const SQLITE_NOTFOUND: 12;
+  export const SQLITE_FULL: 13;
+  export const SQLITE_CANTOPEN: 14;
+  export const SQLITE_PROTOCOL: 15;
+  export const SQLITE_EMPTY: 16;
+  export const SQLITE_SCHEMA: 17;
+  export const SQLITE_TOOBIG: 18;
+  export const SQLITE_CONSTRAINT: 19;
+  export const SQLITE_MISMATCH: 20;
+  export const SQLITE_MISUSE: 21;
+  export const SQLITE_NOLFS: 22;
+  export const SQLITE_AUTH: 23;
+  export const SQLITE_FORMAT: 24;
+  export const SQLITE_RANGE: 25;
+  export const SQLITE_NOTADB: 26;
+  export const SQLITE_NOTICE: 27;
+  export const SQLITE_WARNING: 28;
+  export const SQLITE_ROW: 100;
+  export const SQLITE_DONE: 101;
+  export const SQLITE_OPEN_READONLY: 1;
+  export const SQLITE_OPEN_READWRITE: 2;
+  export const SQLITE_OPEN_CREATE: 4;
 
   /**
    * @ignore
@@ -1107,33 +1227,55 @@ declare module 'wa-sqlite' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/dist/wa-sqlite.mjs' {
+declare module '@sirajchokshi/wa-sqlite/dist/wa-sqlite.mjs' {
   function ModuleFactory(config?: object): Promise<any>;
   export = ModuleFactory;
 }
 
 /** @ignore */
-declare module 'wa-sqlite/dist/wa-sqlite-async.mjs' {
+declare module '@sirajchokshi/wa-sqlite/dist/wa-sqlite-async.mjs' {
   function ModuleFactory(config?: object): Promise<any>;
   export = ModuleFactory;
 }
 
 /** @ignore */
-declare module "wa-sqlite/dist/mc-wa-sqlite.mjs" {
+declare module "@sirajchokshi/wa-sqlite/dist/mc-wa-sqlite.mjs" {
   function ModuleFactory(config?: object): Promise<any>;
   export = ModuleFactory;
 }
 
 /** @ignore */
-declare module "wa-sqlite/dist/mc-wa-sqlite-async.mjs" {
+declare module "@sirajchokshi/wa-sqlite/dist/mc-wa-sqlite-async.mjs" {
   function ModuleFactory(config?: object): Promise<any>;
   export = ModuleFactory;
 }
 
+/** @ignore */
+declare module "@sirajchokshi/wa-sqlite/dist/wa-sqlite-jspi.mjs" {
+  function ModuleFactory(config?: object): Promise<any>;
+  export = ModuleFactory;
+}
 
 /** @ignore */
-declare module 'wa-sqlite/src/VFS.js' {
-  export * from 'wa-sqlite/src/sqlite-constants.js';
+declare module "@sirajchokshi/wa-sqlite/dist/mc-wa-sqlite-jspi.mjs" {
+  function ModuleFactory(config?: object): Promise<any>;
+  export = ModuleFactory;
+}
+
+declare module '@sirajchokshi/wa-sqlite/src/VFS.js' {
+  export const SQLITE_OK: 0;
+  export const SQLITE_IOERR: 10;
+  export const SQLITE_IOERR_SHORT_READ: 522;
+  export const SQLITE_OPEN_CREATE: 4;
+  export const SQLITE_OPEN_READONLY: 1;
+  export const SQLITE_OPEN_READWRITE: 2;
+  export const SQLITE_OPEN_MAIN_DB: 256;
+  export const SQLITE_OPEN_DELETEONCLOSE: 8;
+  export const SQLITE_LOCK_NONE: 0;
+  export const SQLITE_LOCK_SHARED: 1;
+  export const SQLITE_LOCK_RESERVED: 2;
+  export const SQLITE_LOCK_PENDING: 3;
+  export const SQLITE_LOCK_EXCLUSIVE: 4;
 
   export class Base {
     mxPathName: number;
@@ -1247,10 +1389,8 @@ declare module 'wa-sqlite/src/VFS.js' {
   }
 }
 
-/** @ignore */
-declare module 'wa-sqlite/src/examples/IndexedDbVFS.js' {
-  import * as VFS from "wa-sqlite/src/VFS.js";
-  export class IndexedDbVFS extends VFS.Base {
+declare module '@sirajchokshi/wa-sqlite/src/examples/IndexedDbVFS.js' {
+  export class IndexedDbVFS {
     /**
      * @param {string} idbName Name of IndexedDB database.
      */
@@ -1300,26 +1440,52 @@ declare module 'wa-sqlite/src/examples/IndexedDbVFS.js' {
   }
 }
 
-/** @ignore */
-declare module 'wa-sqlite/src/examples/MemoryVFS.js' {
-  import * as VFS from "wa-sqlite/src/VFS.js";
-  /** @ignore */
-  export class MemoryVFS extends VFS.Base {
+declare module '@sirajchokshi/wa-sqlite/src/examples/MemoryVFS.js' {
+  export class MemoryVFS {
     name: string;
     mapNameToFile: Map<any, any>;
     mapIdToFile: Map<any, any>;
   }
 }
 
-/** @ignore */
-declare module 'wa-sqlite/src/examples/MemoryAsyncVFS.js' {
-  import { MemoryVFS } from "wa-sqlite/src/examples/MemoryVFS.js";
-  export class MemoryAsyncVFS extends MemoryVFS {
+declare module '@sirajchokshi/wa-sqlite/src/examples/MemoryAsyncVFS.js' {
+  export class MemoryAsyncVFS {
+    name: string;
+    mapNameToFile: Map<any, any>;
+    mapIdToFile: Map<any, any>;
+  }
+}
+
+declare module '@sirajchokshi/wa-sqlite/src/FacadeVFS.js' {
+  export class FacadeVFS {
+    constructor(name: string, module: any);
+    isReady(): Promise<void>;
+    mxPathName: number;
+    xClose(fileId: number): number|Promise<number>;
+    xRead(fileId: number, pData: number, iAmt: number, iOffsetLo: number, iOffsetHi: number): number|Promise<number>;
+    xWrite(fileId: number, pData: number, iAmt: number, iOffsetLo: number, iOffsetHi: number): number|Promise<number>;
+    xOpen(pVfs: number, zName: number, pFile: number, flags: number, pOutFlags: number): number|Promise<number>;
+  }
+}
+
+declare module '@sirajchokshi/wa-sqlite/src/examples/OPFSCoopSyncVFS.js' {
+  export class OPFSCoopSyncVFS {
+    static create(name: string, module: any): Promise<OPFSCoopSyncVFS>;
+    constructor(name: string, module: any);
+    isReady(): Promise<void>;
+  }
+}
+
+declare module '@sirajchokshi/wa-sqlite/src/examples/IDBBatchAtomicVFS.js' {
+  export class IDBBatchAtomicVFS {
+    static create(name: string, module: any, options?: object): Promise<IDBBatchAtomicVFS>;
+    constructor(name: string, module: any);
+    isReady(): Promise<void>;
   }
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/tag.js' {
+declare module '@sirajchokshi/wa-sqlite/src/examples/tag.js' {
   /**
    * @ignore
    * Template tag builder. This function creates a tag with an API and
